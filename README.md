@@ -32,7 +32,11 @@ OLLAMA_URL=http://127.0.0.1:11434
 OLLAMA_MODEL=qwen3:8b
 ```
 
-Sunucuyu yeniden başlat. Ollama kullanıldığında metin belirtilen Ollama adresine gönderilir. Yerel adres kullanıyorsan metin bu bilgisayarda kalır. Yapılandırmada model adının bulunması bağlantının canlı olduğunun garantisi değildir; model hatası kullanıcıya gösterilir.
+Sunucuyu yeniden başlat. Ollama kullanıldığında metin belirtilen Ollama adresine gönderilir. Yerel adres kullanıyorsan metin bu bilgisayarda kalır. Durum göstergesi Ollama servisine erişimi ve modelin indirilmiş olduğunu kontrol eder; üretim kalitesini garanti etmez.
+
+Taşınabilir CLI kurulumunda `.env` içine `OLLAMA_EXECUTABLE` (ollama.exe tam yolu) ve `OLLAMA_MODELS` (model klasörü tam yolu) ekleyebilirsin. `npm start` servisi gerektiğinde otomatik başlatır; yalnızca yerel HTTP adresine bağlar ve bulut özelliklerini kapatır. Zaten çalışan bir Ollama servisine dokunmaz. Uygulamanın başlattığı servis normal Ctrl+C kapanışında kapatılır. Başlatma sırasında indirme yapılmaz. Bu bilgisayardaki yollar `.env` içinde kalır, GitHub'a gönderilmez.
+
+8 GB VRAM için tek paralel istek, tek yüklü model, Flash Attention ve q8_0 KV cache kullanılır. Yeniden yazım 32K bağlam ve 8192 çıktı token sınırıyla çalışır; yavaş donanımda yerel istek en fazla beş dakika bekler. Çok uzun metinler veya genişleyen çıktı hâlâ bu sınırları aşabilir; hata halinde metni bölerek işle. İlk istek modeli belleğe yüklediği için daha uzun sürebilir.
 
 ### OpenAI / bulut
 
