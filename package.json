@@ -1,0 +1,14 @@
+{
+  "name": "leksivoraq",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Explainable writing signals and meaning-preserving rewriting",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.mjs",
+    "dev": "node --watch --env-file-if-exists=.env server.mjs",
+    "test": "node --test",
+    "check": "node --check server.mjs && node --check lib/analysis.mjs && node --check lib/rewrite.mjs && node --check public/app.js"
+  }
+}
