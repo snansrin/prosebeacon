@@ -3,7 +3,7 @@ let report=null, result=null, sourceAtAnalysis='', revision=0, rewriteSource='';
 let toastTimer;
 function message(text){$('message').textContent=text;$('message').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('message').hidden=true,8000);}
 function counter(){const value=$('source').value;const count=(value.match(/[\p{L}\p{N}]+/gu)||[]).length;$('counter').textContent=`${count} kelime · ${value.length.toLocaleString('tr')} / 20.000`;}
-function invalidate(){revision++;report=null;result=null;$('analysis-result').hidden=true;$('analysis-empty').hidden=false;$('rewrite-result').hidden=true;counter();}
+function invalidate(){revision++;report=null;result=null;$('analysis-result').hidden=true;$('analysis-empty').hidden=false;$('rewrite-result').hidden=true;$('imported-source').textContent='';counter();}
 $('source').addEventListener('input',invalidate);
 $('locale').addEventListener('change',invalidate);
 function headers(){return {'Content-Type':'application/json',...($('password').value?{'X-App-Password':$('password').value}:{})};}
@@ -12,7 +12,38 @@ async function health(){try{const config=await api('/api/health');const live=con
 $('connect').addEventListener('click',health);
 $('sample').addEventListener('click',()=>{$('source').value='Günümüzün hızla değişen dünyasında havacılık teknolojileri önemli bir rol oynamaktadır. Bu bağlamda, kapsamlı bir şekilde değerlendirilen sistemler büyük önem taşımaktadır. Bununla birlikte, çeşitli açılardan ele alınan eğitim süreçleri önemli bir rol oynamaktadır. Sonuç olarak, bu doğrultuda göz önünde bulundurulan gelişmeler yadsınamaz bir gerçektir.\n\nDünkü simülatör oturumunda ILS yaklaşmasını çalıştık. Görüş 800 metreydi; karar irtifasında pisti göremediğim için pas geçtim. Eğitmen, frekansı 110.30 MHz olarak korumamı ve kontrol listesini tekrar okumamı istedi.';invalidate();});
 $('clear').addEventListener('click',()=>{$('source').value='';invalidate();$('source').focus();});
-$('file').addEventListener('change',async()=>{const f=$('file').files[0];if(!f)return;try{if(f.size>80000)throw new Error('Dosya çok büyük. En fazla 20.000 karakter yükleyin.');if(!f.name.toLowerCase().endsWith('.txt'))throw new Error('UTF-8 .txt dosyası seçin.');const text=await f.text();if(text.length>20000)throw new Error('Dosya 20.000 karakteri aşıyor.');$('source').value=text;invalidate();message('Metin yüklendi.');}catch(e){message(e.message);}finally{$('file').value='';}});
+let pendingDocument=null, importing=false;
+$('pick-file').addEventListener('click',()=>$('file').click());
+$('file').addEventListener('change',()=>{const file=$('file').files[0];if(file)void importFile(file);$('file').value='';});
+async function importFile(file){
+  if(importing){message('Devam eden dosya okumasını bekleyin.');return;}
+  const button=$('pick-file');
+  importing=true;button.disabled=true;button.textContent='Dosya okunuyor…';
+  try{
+    if(!/\.(pdf|docx|txt|md)$/iu.test(file.name))throw new Error(/\.doc$/iu.test(file.name)?'Eski .doc dosyasını Word içinde .docx olarak kaydedip yükleyin.':'PDF, DOCX, TXT veya MD dosyası seçin.');
+    if(file.size>10*1024*1024)throw new Error('Dosya en fazla 10 MB olabilir.');
+    if(!file.size)throw new Error('Dosya boş.');
+    const response=await fetch('/api/import',{method:'POST',headers:{...headers(),'Content-Type':'application/octet-stream','X-File-Name':encodeURIComponent(file.name)},body:file,signal:AbortSignal.timeout(35000)});
+    const data=await response.json();if(!response.ok)throw new Error(data.error||'Dosya okunamadı.');
+    pendingDocument={...data,drafts:data.parts.map(part=>data.text.slice(part.start,part.end))};
+    $('import-summary').textContent=`${data.filename} · ${data.format}${data.pages?` · ${data.pages} sayfa`:''} · ${data.text.length.toLocaleString('tr')} karakter`;
+    $('import-warnings').textContent=[...data.warnings,...(data.parts.length>1?[`Metin ${data.parts.length} bölüme ayrıldı. Her seferinde bir bölüm aktarılır; diğer bölümler otomatik analiz edilmez. Aktarılacak bölümü aşağıdan seç.`]:[])].join(' ');
+    $('import-part').replaceChildren();data.parts.forEach((part,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=`Bölüm ${index+1} / ${data.parts.length} · ${(part.end-part.start).toLocaleString('tr')} karakter`;$('import-part').append(option);});
+    $('import-part-control').hidden=data.parts.length<=1;$('import-apply').textContent=data.parts.length>1?'Bu bölümü kullan ↗':'Metni kullan ↗';
+    showImportPart();$('import-dialog').showModal();
+  }catch(e){message(e.name==='TimeoutError'?'Dosya zamanında okunamadı. Daha küçük bir belge deneyin.':e.message);}
+  finally{importing=false;button.disabled=false;button.textContent='↑ Dosya yükle';}
+}
+function showImportPart(){if(!pendingDocument)return;$('import-preview').value=pendingDocument.drafts[Number($('import-part').value)];updateImportCounter();}
+function updateImportCounter(){const length=$('import-preview').value.length;$('import-counter').textContent=`${length.toLocaleString('tr')} / 20.000 karakter`;$('import-apply').disabled=length===0||length>20000;}
+$('import-part').addEventListener('change',showImportPart);
+$('import-preview').addEventListener('input',()=>{if(pendingDocument)pendingDocument.drafts[Number($('import-part').value)]=$('import-preview').value;updateImportCounter();});
+$('import-cancel').addEventListener('click',()=>$('import-dialog').close());
+$('import-dialog').addEventListener('close',()=>{pendingDocument=null;$('import-preview').value='';});
+$('import-apply').addEventListener('click',()=>{if(!pendingDocument)return;const text=$('import-preview').value;if(!text.length||text.length>20000)return;const origin=`Kaynak: ${pendingDocument.filename}${pendingDocument.parts.length>1?` · Bölüm ${Number($('import-part').value)+1}/${pendingDocument.parts.length}`:''}`;$('source').value=text;invalidate();$('imported-source').textContent=origin;$('import-dialog').close();$('source').focus();message('Metin aktarıldı. Analiz edebilir veya yeniden yazabilirsin.');});
+for(const event of ['dragenter','dragover'])$('source-panel').addEventListener(event,e=>{if(e.dataTransfer.types.includes('Files')){e.preventDefault();$('source-panel').classList.add('dropover');}});
+$('source-panel').addEventListener('dragleave',e=>{if(!$('source-panel').contains(e.relatedTarget))$('source-panel').classList.remove('dropover');});
+$('source-panel').addEventListener('drop',e=>{e.preventDefault();$('source-panel').classList.remove('dropover');if(e.dataTransfer.files.length!==1){message('Her seferinde bir dosya bırakın.');return;}void importFile(e.dataTransfer.files[0]);});
 async function busy(button,work){const before=button.textContent;button.disabled=true;button.textContent='İşleniyor…';try{await work();}catch(e){message(e.name==='TimeoutError'?'İşlem zaman aşımına uğradı. Tekrar deneyin.':e.message);}finally{button.disabled=false;button.textContent=before;}}
 $('analyze').addEventListener('click',()=>busy($('analyze'),async()=>{const text=$('source').value, rev=revision;const data=await api('/api/analyze',{text,locale:$('locale').value});if(rev!==revision)return;report=data;sourceAtAnalysis=text;renderReport();}));
 function renderReport(){$('analysis-empty').hidden=true;$('analysis-result').hidden=false;$('score').textContent=report.score;$('score-label').textContent=report.score>=45?'Yüksek üslup sinyali':report.score>=20?'Orta üslup sinyali':'Düşük üslup sinyali';$('analysis-count').textContent=`${report.sentenceCount} cümle · ${report.words} kelime`;$('reliability').textContent=report.reliability==='short-text'?'Kısa metin: 80 kelimenin altında yorum gücü daha sınırlıdır.':'Kalibre edilmemiş üslup endeksi. Yazarlığı belirlemez.';$('highlighted').replaceChildren();for(const s of report.sentences){const el=document.createElement('button');el.className=`sentence ${s.level}`;el.textContent=s.text;el.title=`${s.signal}/100 · ${s.reasons.join(', ') || 'Belirgin sinyal bulunmadı'}`;el.addEventListener('click',()=>{$('sentence-detail').textContent=`Cümle ${s.id+1} · ${s.signal}/100: ${s.reasons.join('; ') || 'Tanımlı örüntülerden biri görülmedi. Bu, insan yazarlığı kanıtı değildir.'}`;});$('highlighted').append(el);}$('sentence-detail').textContent='Bir cümleye dokunarak gerekçesini gör.';$('metrics').replaceChildren();for(const [label,value] of [['Ort. cümle',`${report.metrics.averageSentenceWords} kelime`],['Uzunluk değişimi',`${report.metrics.sentenceVariation}%`],['Sözcük çeşitliliği',`${report.metrics.lexicalDiversity}%`]]){const item=document.createElement('span');item.textContent=label;const strong=document.createElement('strong');strong.textContent=value;item.append(strong);$('metrics').append(item);}}

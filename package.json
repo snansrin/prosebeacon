@@ -4,11 +4,21 @@
   "private": true,
   "type": "module",
   "description": "Explainable writing signals and meaning-preserving rewriting",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "start": "node --env-file-if-exists=.env server.mjs",
     "dev": "node --watch --env-file-if-exists=.env server.mjs",
     "test": "node --test",
-    "check": "node --check server.mjs && node --check lib/analysis.mjs && node --check lib/rewrite.mjs && node --check lib/local-runtime.mjs && node --check public/app.js"
+    "check": "node --check server.mjs && node --check lib/analysis.mjs && node --check lib/rewrite.mjs && node --check lib/local-runtime.mjs && node --check lib/documents.mjs && node --check lib/document-worker.mjs && node --check public/app.js"
+  },
+  "dependencies": {
+    "mammoth": "1.13.0",
+    "pdfjs-dist": "6.4.299",
+    "yauzl": "3.4.0"
+  },
+  "devDependencies": {
+    "fflate": "0.8.3"
   }
 }

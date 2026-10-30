@@ -8,11 +8,12 @@ Türkçe ve İngilizce metinlerde cümle düzeyinde açıklanabilir üslup sinya
 
 ## Başlat
 
-Node.js **22+** gereklidir. Harici npm bağımlılığı ve kurulum adımı yoktur.
+Node.js **22.13+** gereklidir. PDF ve Word ayrıştırıcılarını kilit dosyasıyla kur:
 
 ```sh
 git clone https://github.com/snansrin/leksivoraq.git
 cd leksivoraq
+npm ci
 npm start
 ```
 
@@ -58,7 +59,8 @@ Motor yapılandırılmamışsa uygulama sahte yeniden yazım üretmez; açık bi
 - Dört üslup, serbest talimat, virgülle ayrılmış korunacak terimler.
 - Yeniden yazımda eksilen sayılar, kısaltmalar, URL'ler, köşeli parantezli atıflar ve terimler için kontrol; eklenen sayılar için uyarı. Bu kontrol semantik doğrulama değildir; birimler, özel adlar ve olumsuzluklar ayrıca insan tarafından incelenmelidir.
 - Orijinal ve yeni metni yan yana inceleme, kopyalama, TXT ve JSON indirme.
-- UTF-8 TXT içe aktarma, mobil düzen, klavye odağı ve durum mesajları.
+- PDF, Word (.docx), TXT ve Markdown (.md) yükleme veya sürükleyip bırakma; düzenlenebilir metin önizlemesi.
+- 20.000 karakterden uzun belgelerde bölüm seçimi; metin sessizce kesilmez. Yalnızca seçilen bölüm mevcut editöre aktarılır.
 - 20.000 karakter sınırı, aynı kaynak isteği kontrolü, API parola seçeneği, zaman aşımı ve istek sınırlama.
 
 ## Test
@@ -79,8 +81,23 @@ Testler gerçek HTTP sunucusunda giriş doğrulama, erişim denetimi, statik dos
 | `GET /api/health` | Sağlayıcı yapılandırması, anahtar içermez |
 | `POST /api/analyze` | `{ "text": "...", "locale": "tr" }` |
 | `POST /api/rewrite` | `{ "text": "...", "style": "aviation", "instruction": "...", "glossary": "ILS, TCAS" }` |
+| `POST /api/import` | Ham dosya baytları; `Content-Type: application/octet-stream`, `X-File-Name: encodeURIComponent(filename)` |
 
-İstek gövdesi JSON olmalıdır. Parola ayarlıysa `X-App-Password` başlığı gerekir. Parola uygulamanın Kurulum bölümünde girilir ve sadece sayfanın belleğinde tutulur. Her IP için dakikada 30 POST, aynı anda 2 düzenleme sınırı vardır. Tek sunuculu basit korumadır; dağıtık kota değildir.
+Analiz/düzenleme gövdesi JSON; içe aktarma gövdesi ham dosya baytları olmalıdır. Parola ayarlıysa tüm API'lerde `X-App-Password` başlığı gerekir. Parola uygulamanın Kurulum bölümünde girilir ve sadece sayfanın belleğinde tutulur. Her IP için dakikada 30 POST, aynı anda 2 düzenleme sınırı vardır. Tek sunuculu basit korumadır; dağıtık kota değildir.
+
+## PDF ve Word yükleme
+
+Dosya yükle düğmesini kullan veya kaynak metin paneline bir dosya bırak. Metin önce önizlemede açılır; düzenleyip **Metni kullan** dediğinde mevcut editöre aktarılır. Önizlemeyi iptal etmek mevcut metni ve analizini değiştirmez.
+
+- Biçimler: metin içeren PDF, DOCX, TXT, MD. Eski `.doc` dosyasını Word içinde `.docx` olarak kaydetmek gerekir. Makrolu Word, RTF, ODT ve diğer biçimler bu sürümde desteklenmez.
+- Dosya sınırı **10 MB**; PDF sınırı **150 sayfa**; çıkarılan metin sınırı **500.000 karakter**. Bu sınırlar aşılırsa dosya reddedilir, sessizce kesilmez.
+- Uzun metinler en fazla **20.000 karakterlik bölümlere** ayrılır. Önizlemede aktarılacak bölümü seç; her bölüm için ayrı analiz/düzenleme yap. Diğer bölümler otomatik işlenmez.
+- Taranmış/görüntü PDF için yerleşik OCR yoktur. Seçilebilir metin bulunmazsa OCR gerektiği belirtilir; bazı sayfalarda metin yoksa uyarı gösterilir. Şifreli PDF için parolasız kopya gerekir.
+- Görseller, sayfa tasarımı ve Word biçimlendirmesi aktarılmaz. PDF sütunları ve tabloların okuma sırası farklı olabilir; önizlemeyi kontrol et. TXT/MD için UTF-8 veya BOM içeren UTF-16 desteklenir.
+- Dosyalar sunucu belleğinde okunur; uygulama diske yazmaz ve içe aktarırken modele göndermez. Yerel kurulumda bu sunucu senin bilgisayarındır. Barındırılan kurulumda dosya uygulama sunucusuna gider. Yeniden yazmaya basıldığında yalnızca editördeki metin seçili model sağlayıcısına gönderilir.
+- Ayrıştırma ayrı bir worker thread içinde zaman/bellek sınırıyla çalışır. Aynı anda en fazla iki belge ayrıştırılır. DOCX arşivinin açılmış boyutu 50 MB, öğe sayısı 2048 ile sınırlıdır. PDF JavaScript'i çalıştırılmaz; DOCX çıktısı HTML yerine düz metindir.
+
+Testler gerçek PDF/DOCX baytları, tablolar, Türkçe karakterler, boş/taranmış PDF, bozuk dosya, arşiv sınırı, büyük dosya, zaman aşımı, iptal, bölüm bütünlüğü ve yükleme API erişim kontrollerini kapsar.
 
 ## Dağıtım
 
