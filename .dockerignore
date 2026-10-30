@@ -5,3 +5,7 @@ node_modules
 test
 docs
 *.log
+.prosebeacon-data
+.detector-venv
+.models
+__pycache__

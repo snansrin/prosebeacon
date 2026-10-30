@@ -55,7 +55,7 @@ test('unknown styles, prototype names and oversized instructions rejected',async
 });
 async function withServer(options,fn){const server=createApp(options);await new Promise(r=>server.listen(0,'127.0.0.1',r));try{await fn(`http://127.0.0.1:${server.address().port}`);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}}
 test('HTTP integration: assets, analysis, errors, secrets and same-origin enforcement',()=>withServer({},async base=>{
-  const home=await fetch(base);assert.equal(home.status,200);assert.match(await home.text(),/Leksivoraq/);assert.match(home.headers.get('content-security-policy'),/frame-ancestors 'none'/);
+  const home=await fetch(base);assert.equal(home.status,200);assert.match(await home.text(),/ProseBeacon/);assert.match(home.headers.get('content-security-policy'),/frame-ancestors 'none'/);
   const health=await (await fetch(base+'/api/health')).json();assert.equal(health.ready,false);
   const request=(path,body,headers={})=>fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify(body)});
   const response=await request('/api/analyze',{text:sample});assert.equal(response.status,200);assert.equal((await response.json()).calibrated,false);
