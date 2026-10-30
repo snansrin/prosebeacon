@@ -1,0 +1,102 @@
+{
+  "date": "2026-10-30",
+  "scope": "Live local smoke test with synthetic Turkish source; not a quality benchmark or detector-accuracy evaluation",
+  "health": {
+    "ok": true,
+    "provider": "ollama",
+    "ready": true,
+    "model": "qwen3:8b",
+    "connected": true,
+    "modelAvailable": true,
+    "analysis": "local; no external transmission",
+    "maxCharacters": 20000
+  },
+  "source": "Günümüzün hızla gelişen havacılık dünyasında, pilot eğitiminde simülatör kullanımı büyük önem taşımaktadır. Denemede ILS frekansı 110.30 MHz olarak ayarlanmış, karar irtifası 200 ft olarak korunmuştur [12]. Bununla birlikte, gözlemler yalnızca 24 katılımcı ile sınırlıdır; bulgular tüm pilotlara genellenemez.",
+  "model": {
+    "name": "qwen3:8b",
+    "model": "qwen3:8b",
+    "modified_at": "2026-10-30T01:03:20.1520788+03:00",
+    "size": 5225388164,
+    "digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+    "details": {
+      "parent_model": "",
+      "format": "gguf",
+      "family": "qwen3",
+      "families": [
+        "qwen3"
+      ],
+      "parameter_size": "8.2B",
+      "quantization_level": "Q4_K_M",
+      "context_length": 40960,
+      "embedding_length": 4096,
+      "runner": "ggml"
+    },
+    "capabilities": [
+      "completion",
+      "tools",
+      "thinking"
+    ]
+  },
+  "runtime": [
+    {
+      "name": "qwen3:8b",
+      "size": 8151954881,
+      "size_vram": 6182037094,
+      "context_length": 32768
+    }
+  ],
+  "results": [
+    {
+      "style": "natural",
+      "seconds": 8.7,
+      "text": "Havacılık sektörü hızla gelişirken, pilot eğitiminde simülatör kullanımı büyük rol oynamaktadır. Denemede ILS frekansı 110.30 MHz olarak belirlenmiş ve karar irtifası 200 ft olarak sabit tutulmuştur [12]. Ancak gözlemler sadece 24 katılımcıya sınırlı kalmış; bu bulguların tüm pilotlara uygulanması mümkün olmamıştır.",
+      "provider": "ollama",
+      "model": "qwen3:8b",
+      "preservation": {
+        "missing": [],
+        "addedNumbers": []
+      },
+      "needsReview": false,
+      "notice": "Yapay zekâ destekli düzenleme. Anlam ve teknik doğruluk için son metni inceleyin."
+    },
+    {
+      "style": "technical",
+      "seconds": 4.6,
+      "text": "Günümüzün hızla gelişen havacılık dünyasında pilot eğitiminde simülatör kullanımı büyük önem taşımaktadır. Denemede ILS frekansı 110.30 MHz olarak ayarlanmış ve karar irtifası 200 ft olarak korunmuştur [12]. Ancak gözlemler yalnızca 24 katılımcıya sınırlı kalmıştır; bu nedenle bulguların tüm pilotlara genellemesi mümkün değildir.",
+      "provider": "ollama",
+      "model": "qwen3:8b",
+      "preservation": {
+        "missing": [],
+        "addedNumbers": []
+      },
+      "needsReview": false,
+      "notice": "Yapay zekâ destekli düzenleme. Anlam ve teknik doğruluk için son metni inceleyin."
+    },
+    {
+      "style": "academic",
+      "seconds": 4.7,
+      "text": "Günümüzün hızla gelişen havacılık dünyasında pilot eğitiminde simülatör kullanımı büyük önem taşımaktadır. Denemede ILS frekansı 110.30 MHz olarak ayarlanmış, karar irtifası 200 ft olarak korunmuştur [12]. Bu deneyimin sonuçları, yalnızca 24 katılımcı üzerinden elde edilmiştir; dolayısıyla bulguların tüm pilotlara genellemek mümkün değildir.",
+      "provider": "ollama",
+      "model": "qwen3:8b",
+      "preservation": {
+        "missing": [],
+        "addedNumbers": []
+      },
+      "needsReview": false,
+      "notice": "Yapay zekâ destekli düzenleme. Anlam ve teknik doğruluk için son metni inceleyin."
+    },
+    {
+      "style": "aviation",
+      "seconds": 4.9,
+      "text": "Günümüzün hızla gelişen havacılık dünyasında, pilot eğitiminde simülatör kullanımı büyük önem taşımaktadır. Denemede ILS frekansı 110.30 MHz olarak ayarlanmış ve karar irtifası 200 ft olarak korunmuştur [12]. Bu deneyim, yalnızca 24 katılımcı ile sınırlı kalmıştır; bu nedenle elde edilen bulguların tüm pilotlara genel geçerli olması mümkün değildir.",
+      "provider": "ollama",
+      "model": "qwen3:8b",
+      "preservation": {
+        "missing": [],
+        "addedNumbers": []
+      },
+      "needsReview": false,
+      "notice": "Yapay zekâ destekli düzenleme. Anlam ve teknik doğruluk için son metni inceleyin."
+    }
+  ]
+}

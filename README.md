@@ -70,6 +70,8 @@ npm test
 
 Testler gerçek HTTP sunucusunda giriş doğrulama, erişim denetimi, statik dosya sınırı ve istek kotasını; sahte sağlayıcı ile Ollama/OpenAI protokolü, hata yanıtları ve içerik koruma kontrolünü kapsar. CI Ubuntu ve Windows'ta Node 22/24 çalıştırır. Sahte sağlayıcı testleri canlı model kalitesini doğrulamaz.
 
+[Gerçek yerel model testi](docs/LOCAL-VALIDATION.md), kullanılan donanımı, süreleri, örnek yanıtları ve gözlenen kalite sınırlarını ayrıca kaydeder. Windows'ta `Baslat.cmd` dosyası uygulamayı proje klasöründe başlatır.
+
 ## API
 
 | Uç nokta | İşlev |
