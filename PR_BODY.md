@@ -47,6 +47,10 @@ Bu dal, bildirilen dört sorunun tamamını kök nedenleriyle çözer ve istenen
 - `tools/launch.js`: sunucuyu başlatır, health bekler, tarayıcıyı açar, kapanışta sunucuyu durdurur.
 - `tools/make-icons.py`: bağımlılıksız PNG/ICO/ICNS üretimi (zlib+struct); simgeler `assets/` içinde.
 
+## Bellek güvenliği
+
+- `lib/statistics.mjs`: `Intl.Segmenter` tez boyutundaki belgede yığını tüketip sunucuyu düşürüyordu (504 MB'ta OOM gözlendi). Regex tabanlı doğrusal sayaca geçildi: 92.883 karakter **96 ms / 9 MB**. Kelime sayacı artık sunucuyu öldüremez.
+
 ## API eklemeleri
 
 `POST /api/proofread`, `/api/transform`, `/api/compare`, `/api/citations` (+format indirmeleri), `/api/sources` (SSE), `/api/report`. `/api/health` artık motorları, dil paketlerini, dayanakları, üslupları ve sınırları döner. Kota: IP başına dakikada 120 POST, aynı anda 2 düzenleme, 3 belge ayrıştırma.
