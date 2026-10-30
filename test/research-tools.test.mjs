@@ -61,7 +61,7 @@ test('HTTP research routes validate inputs and expose only configured classifier
     const response=await post('/api/similarity',{text:passage,sources:[source]});assert.equal(response.status,200);assert.equal((await response.json()).score,100);
     assert.equal((await post('/api/statistics',{text:''})).status,200);
     assert.equal((await post('/api/classify',{text:passage,locale:'tr'})).status,200);
-    assert.equal((await post('/api/review',{text:passage,locale:'tr'})).status,503);
+    const review=await post('/api/review',{text:passage,locale:'tr'});assert.equal(review.status,200);assert.equal((await review.json()).provider,'builtin');
     const health=await(await fetch(base+'/api/health')).json();assert.equal(health.classifier.configured,false);assert.equal(health.classifier.calibrated,false);
     for(const path of ['/tools.js','/statistics.js','/report.js','/print.html'])assert.equal((await fetch(base+path)).status,200);
     assert.equal((await fetch(base+'/python/detector.py')).status,404);

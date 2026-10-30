@@ -46,14 +46,18 @@ test('image-only PDF asks for OCR, and mixed blank pages are disclosed',async()=
   assert.ok(mixed.warnings.some(value=>/1 sayfada/u.test(value)));
 });
 test('PDF page limit and total extracted text limit are explicit',async()=>{
-  await assert.rejects(extractDocument(pdfFixture(Array(151).fill('Text.')),'book.pdf'),error=>error.status===413);
-  await assert.rejects(extractDocument(Buffer.from('a'.repeat(500001)),'book.txt'),error=>error.status===413);
+  // v0.3: a normal thesis (hundreds of pages) must import in one piece.
+  const long=await extractDocument(pdfFixture(Array(300).fill('Metin cümlesi.')),'long.pdf');
+  assert.equal(long.pages,300);
+  await assert.rejects(extractDocument(pdfFixture(Array(801).fill('Text.')),'book.pdf'),error=>error.status===413&&/800/u.test(error.message));
+  await assert.rejects(extractDocument(Buffer.from('a'.repeat(2000001)),'book.txt'),error=>error.status===413);
 });
-test('large document parts preserve every character, order and surrogate pairs',()=>{
-  const text=('Türkçe paragraf ığüşöç.\n\n'.repeat(3000))+'🚀';const parts=splitDocument(text);
+test('splitDocument keeps every character, order and surrogate pairs (internal helper)',()=>{
+  const text=('Türkçe paragraf ığüşöç.\n\n'.repeat(3000))+'🚀';const parts=splitDocument(text,20000);
   assert.ok(parts.length>1);assert.equal(parts.map(p=>text.slice(p.start,p.end)).join(''),text);
   for(const part of parts)assert.ok(part.end-part.start<=20000&&part.end>part.start);
-  const edge='x'.repeat(19999)+'🚀x';const pieces=splitDocument(edge);assert.equal(pieces[0].end,19999);
+  const edge='x'.repeat(19999)+'🚀x';const pieces=splitDocument(edge,20000);assert.equal(pieces[0].end,19999);
+  // The public import path must not chunk: the whole document is returned.
 });
 test('parser timeout and cancellation are bounded and release the worker slot',async()=>{
   await assert.rejects(extractDocument(docxFixture(),'test.docx',{timeoutMs:1}),error=>error.status===422);
@@ -71,7 +75,7 @@ test('HTTP import applies authentication, origin, content type, size and format 
     assert.equal((await post('old.doc',Buffer.from('Text'))).status,415);
     assert.equal((await post('fake.pdf',Buffer.from('not a PDF'))).status,422);
     const result=await post('uçuş.docx',docxFixture());assert.equal(result.status,200);const data=await result.json();assert.equal(data.filename,'uçuş.docx');assert.match(data.text,/110\.30/u);
-    const large=await post('long.md',Buffer.from('Türkçe uzun metin.\n'.repeat(3000)));assert.equal(large.status,200);assert.ok((await large.json()).parts.length>1);
+    const large=await post('long.md',Buffer.from('Türkçe uzun metin.\n'.repeat(3000)));assert.equal(large.status,200);const largeData=await large.json();assert.equal(largeData.whole,true);assert.equal(largeData.parts,undefined);assert.ok(largeData.text.length>50000);
     assert.equal((await post('huge.txt',Buffer.alloc(MAX_FILE_BYTES+1,65))).status,413);
   }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
 });

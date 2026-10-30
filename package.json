@@ -1,15 +1,17 @@
 {
   "name": "prosebeacon",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
-  "description": "Explainable writing signals and meaning-preserving rewriting",
+  "description": "Yerel, açıklanabilir akademik yazı motoru: yazım denetimi, üslup dönüşümü, yapay zekâ benzerliği, kaynakça ve kaynak doğrulama",
   "engines": {
-    "node": ">=22.13.0"
+    "node": ">=20.9.0"
   },
   "scripts": {
-    "start": "node --env-file-if-exists=.env server.mjs",
-    "dev": "node --watch --env-file-if-exists=.env server.mjs",
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs",
+    "launch": "node tools/launch.js",
+    "icons": "python3 tools/make-icons.py",
     "test": "node --test",
     "check": "node scripts/check.mjs"
   },

@@ -19,7 +19,7 @@ test('plain English has no invented statistical authorship certainty',()=>{
   const r=analyze('I missed the train this morning. My neighbor gave me a lift to work.','en');assert.equal(r.score,0);assert.equal(r.locale,'en');
 });
 test('invalid input and unsupported locale rejected',()=>{
-  for(const s of [null,3,'','x'.repeat(20001),'a'.repeat(20)+'\u0000']) assert.throws(()=>validateText(s));
+  for(const s of [null,3,'','x'.repeat(200001),'a'.repeat(20)+'\u0000']) assert.throws(()=>validateText(s));
   assert.throws(()=>analyze(sample,'fr'));
 });
 test('empty whitespace is invalid',()=>assert.throws(()=>analyze(' '.repeat(40))));
@@ -27,27 +27,33 @@ test('numeric drift, citations and glossary loss are exposed',()=>{
   const r=checkPreservation('ILS frekansı 110.30 MHz [12]. Karar irtifası 200 ft.','Frekans 110.50 MHz [12]. Karar irtifası 200 ft.',['karar irtifası']);
   assert.ok(r.missing.includes('110.30'));assert.ok(r.missing.includes('ILS'));assert.ok(r.addedNumbers.includes('110.50'));
 });
-test('unconfigured rewrite returns explicit setup error',async()=>{
-  assert.equal(configuration({}).ready,false);await assert.rejects(rewrite({text:sample},{env:{}}),e=>e.status===503);
+test('unconfigured installs still rewrite: the builtin engine is always ready',async()=>{
+  assert.equal(configuration({}).ready,true);assert.equal(configuration({}).provider,'builtin');
+  const r=await rewrite({text:sample,style:'academic'},{env:{}});
+  assert.equal(r.provider,'builtin');assert.ok(r.text.length>0);assert.ok(r.diff);assert.ok(r.diffStats);
 });
 const env={AI_PROVIDER:'openai',OPENAI_API_KEY:'unit-test-secret',OPENAI_MODEL:'test-model'};
 test('OpenAI integration sends key only as header and reports integrity drift',async()=>{
   let call;
-  const r=await rewrite({text:'TCAS sisteminin menzili 20 NM olarak ölçüldü.',style:'aviation'},{env,fetcher:async(url,init)=>{call={url,init};return new Response(JSON.stringify({choices:[{message:{content:'TCAS menzili 30 NM ölçüldü.'},finish_reason:'stop'}]}));}});
+  const r=await rewrite({text:'TCAS sisteminin menzili 20 NM olarak ölçüldü.',style:'technical'},{env,fetcher:async(url,init)=>{call={url,init};return new Response(JSON.stringify({choices:[{message:{content:'TCAS menzili 30 NM ölçüldü.'},finish_reason:'stop'}]}));}});
   assert.equal(call.url,'https://api.openai.com/v1/chat/completions');assert.equal(call.init.headers.Authorization,'Bearer unit-test-secret');assert.ok(!call.init.body.includes('unit-test-secret'));assert.ok(r.needsReview);assert.ok(r.preservation.missing.includes('20'));
 });
 test('Ollama response and local endpoint',async()=>{
   const r=await rewrite({text:sample,style:'academic'},{env:{AI_PROVIDER:'ollama',OLLAMA_MODEL:'test'},fetcher:async(url,init)=>{assert.equal(url,'http://127.0.0.1:11434/api/chat');assert.equal(init.headers.Authorization,undefined);return new Response(JSON.stringify({message:{content:sample},done_reason:'stop'}));}});
   assert.equal(r.text,sample);assert.equal(r.needsReview,false);
 });
-test('malformed, empty and truncated model outputs fail clearly',async()=>{
+test('malformed, empty and truncated model outputs fall back to the builtin engine',async()=>{
   for(const value of ['not json',JSON.stringify({choices:[]}),JSON.stringify({choices:[{finish_reason:'length',message:{content:'Incomplete'}}]})]) {
-    await assert.rejects(rewrite({text:sample},{env,fetcher:async()=>new Response(value)}),e=>e.status===502);
+    const r=await rewrite({text:sample},{env,fetcher:async()=>new Response(value)});
+    assert.equal(r.provider,'builtin');assert.ok(r.text.length>0);assert.ok(r.notice);
   }
 });
-test('upstream failures do not leak response bodies or keys',async()=>{
-  await assert.rejects(rewrite({text:sample},{env,fetcher:async()=>new Response('secret diagnostic',{status:401})}),e=>e.status===502&&!e.message.includes('secret'));
-  await assert.rejects(rewrite({text:sample},{env,fetcher:async()=>{throw new Error('secret')}}),e=>e.status===502&&!e.message.includes('secret'));
+test('upstream failures neither leak secrets nor break the request',async()=>{
+  for(const fetcher of [async()=>new Response('secret diagnostic',{status:401}),async()=>{throw new Error('secret')}]) {
+    const r=await rewrite({text:sample},{env,fetcher});
+    assert.equal(r.provider,'builtin');
+    assert.ok(!JSON.stringify(r).includes('secret'));
+  }
 });
 test('unknown styles, prototype names and oversized instructions rejected',async()=>{
   for(const style of ['unknown','toString','__proto__'])await assert.rejects(rewrite({text:sample,style},{env}),e=>e.status===400);
@@ -56,12 +62,12 @@ test('unknown styles, prototype names and oversized instructions rejected',async
 async function withServer(options,fn){const server=createApp(options);await new Promise(r=>server.listen(0,'127.0.0.1',r));try{await fn(`http://127.0.0.1:${server.address().port}`);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}}
 test('HTTP integration: assets, analysis, errors, secrets and same-origin enforcement',()=>withServer({},async base=>{
   const home=await fetch(base);assert.equal(home.status,200);assert.match(await home.text(),/ProseBeacon/);assert.match(home.headers.get('content-security-policy'),/frame-ancestors 'none'/);
-  const health=await (await fetch(base+'/api/health')).json();assert.equal(health.ready,false);
+  const health=await (await fetch(base+'/api/health')).json();assert.equal(health.ready,true);assert.equal(health.provider,'builtin');assert.equal(health.wholeDocument,true);assert.ok(health.maxCharacters>=200000);
   const request=(path,body,headers={})=>fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify(body)});
   const response=await request('/api/analyze',{text:sample});assert.equal(response.status,200);assert.equal((await response.json()).calibrated,false);
-  for(const body of [null,[],{}, {text:4},{text:'x'.repeat(20001)}])assert.ok((await request('/api/analyze',body)).status>=400);
+  for(const body of [null,[],{}, {text:4},{text:'x'.repeat(200001)}])assert.ok((await request('/api/analyze',body)).status>=400);
   assert.equal((await request('/api/analyze',{text:sample},{Origin:'https://evil.example'})).status,403);
-  assert.equal((await request('/api/rewrite',{text:sample})).status,503);
+  const rewritten=await request('/api/rewrite',{text:sample});assert.equal(rewritten.status,200);assert.ok((await rewritten.json()).text.length>0);
   assert.equal((await fetch(base+'/.env')).status,404);
   assert.equal((await fetch(base+'/lib/rewrite.mjs')).status,404);
 }));
@@ -70,5 +76,5 @@ test('HTTP authentication protects every API and does not expose credentials',()
   const response=await fetch(base+'/api/health',{headers:{'X-App-Password':'test-password'}});assert.equal(response.status,200);const text=await response.text();assert.ok(!text.includes('unit-test-secret'));assert.ok(!text.includes('test-password'));
 }));
 test('rate limit bounds repeated expensive requests',()=>withServer({},async base=>{
-  let status;for(let i=0;i<31;i++)status=(await fetch(base+'/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:sample})})).status;assert.equal(status,429);
+  let status;for(let i=0;i<121;i++)status=(await fetch(base+'/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:sample})})).status;assert.equal(status,429);
 }));

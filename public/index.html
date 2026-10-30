@@ -1,17 +1,179 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Metnin izlerini keşfet. Anlamını koruyarak kendi üslubunu bul."><title>ProseBeacon — Metnin izini sür.</title><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/import.css"><link rel="stylesheet" href="/tools.css"><script type="module" src="/app.js"></script><script type="module" src="/tools.js"></script><script type="module" src="/advanced.js"></script></head>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProseBeacon — yerel akademik yazı motoru</title>
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1220'/%3E%3Cpath d='M20 46V18h13c6 0 10 4 10 9s-4 9-10 9h-6v10z' fill='%23e5484d'/%3E%3Ccircle cx='44' cy='42' r='7' fill='none' stroke='%2330a46c' stroke-width='4'/%3E%3C/svg%3E">
+</head>
 <body>
-<aside class="sidebar"><a class="brand" href="/" aria-label="ProseBeacon ana sayfa"><span class="brand-icon">pb</span><span>ProseBeacon<sup>LAB</sup></span></a><p class="nav-label">YAZI ÇALIŞMA ALANI</p><a class="nav active" href="#workspace"><span>◈</span> Metin stüdyosu <small>01</small></a><a class="nav" href="#detector-tools"><span>◎</span> YZ karşılaştırması</a><a class="nav" href="#similarity-tools"><span>▧</span> Kaynak benzerliği</a><a class="nav" href="#counter-tools"><span>№</span> Kelime sayacı</a><a class="nav" href="#method"><span>≋</span> Nasıl çalışır?</a><a class="nav" href="#setup"><span>⚙</span> Motor kurulumu</a><div class="sidebar-bottom"><div class="privacy-dot"></div><strong>Yerel çalış. Kontrollü paylaş.</strong><p>Model incelemesi ve yeniden yazma seçili modele, internet araması seçili arama sağlayıcısına gönderilir.</p><span class="version">PROSEBEACON / v0.2</span></div></aside>
-<div class="shell"><header><span class="breadcrumb">Çalışma alanı <span>/</span> <strong>Metin stüdyosu</strong></span><span id="engine-status" class="status">● Motor kontrol ediliyor</span></header>
-<main id="workspace"><section class="intro"><div><p class="eyebrow">DAHA BİLİNÇLİ YAZ. DAHA İYİ ANLAT.</p><h1>Metnin izini sür.<br><span>Kendi sesini bul.</span></h1><p class="intro-copy">Yazındaki tekrarları ve kalıpları gör. Anlamını koruyarak<br class="desktop"> doğal, teknik ya da akademik bir anlatıma dönüştür.</p></div><div class="intro-art" aria-hidden="true"><div class="orbit o1"></div><div class="orbit o2"></div><div class="orbit o3"></div><div class="art-center">a<span>↗</span></div><span class="art-note">ANLAM AYNI.<br>ANLATIM SENİN.</span></div></section>
-<section id="counter-tools" class="counter-strip" aria-label="Ücretsiz kelime sayacı"><div><span>Kelime</span><strong id="live-words">0</strong></div><div><span>Karakter</span><strong id="live-chars">0</strong></div><div><span>Cümle / paragraf</span><strong id="live-sentences">0 / 0</strong></div><div><span>Okuma süresi</span><strong id="live-reading">0 sn</strong></div><div><span>Konuşma süresi</span><strong id="live-speaking">0 sn</strong></div></section><div class="studio-toolbar"><div class="tab-title">◈ <strong>Metin stüdyosu</strong><span class="beta">BETA</span></div><button id="sample" class="text-button">Örnek metin dene ↗</button></div>
-<section class="studio"><div class="editor-panel" id="source-panel"><div class="panel-heading"><h2>Kaynak metin</h2><div class="heading-actions"><button id="pick-file" class="text-button">↑ Dosya yükle</button><input type="file" id="file" accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown" hidden><label class="sr-only" for="locale">Metin dili</label><select id="locale"><option value="tr">Türkçe</option><option value="en">English</option></select></div></div><p class="upload-hint">PDF, Word (.docx), TXT, MD · En fazla 10 MB · Sürükleyip bırakabilirsin.</p><p id="imported-source" class="imported-source" aria-live="polite"></p><label class="sr-only" for="source">Analiz edilecek kaynak metin</label><textarea id="source" maxlength="20000" placeholder="Metnini buraya yaz veya PDF / Word dosyanı sürükleyip bırak…&#10;&#10;Dosyadan çıkarılan metni önce önizlemede kontrol edebilirsin." spellcheck="false"></textarea><div class="editor-footer"><span id="counter">0 kelime · 0 / 20.000</span><button id="clear" class="text-button">Temizle</button></div><div class="action-row"><span>◎ Yerel ve açıklanabilir analiz</span><button id="analyze" class="primary">Metni analiz et <span>↗</span></button></div></div>
-<div class="result-panel"><div class="panel-heading"><h2>Metnin haritası</h2><span class="live-label">CÜMLE BAZINDA</span></div><div id="analysis-empty" class="empty-state"><div class="empty-icon">≋</div><h3>Her metin bir iz bırakır.</h3><p>Metnini ekle ve analiz et.<br>Üslup sinyallerini burada keşfet.</p><div class="legend"><span><i class="low"></i> Düşük</span><span><i class="medium"></i> Orta</span><span><i class="high"></i> Yüksek</span></div></div><div id="analysis-result" hidden><div class="score-row"><div><span class="eyebrow">ÜSLUP SİNYAL ENDEKSİ</span><p class="score"><span id="score">0</span><small>/100</small></p></div><div class="score-context"><strong id="score-label"></strong><span id="analysis-count"></span></div></div><p class="subtle" id="reliability"></p><div id="highlighted" class="highlighted"></div><div id="sentence-detail" class="sentence-detail" aria-live="polite">Bir cümleye dokunarak gerekçesini gör.</div><div class="metrics" id="metrics"></div><button id="export-analysis" class="text-button">↓ Analiz raporunu indir (.json)</button></div><p class="analysis-note">ⓘ Bu endeks yapay zekâ yazarlığı olasılığı değildir. Kalıplaşmış insan yazısı da işaretlenebilir.</p></div></section>
-<section id="detector-tools" class="tool-card"><div class="tool-heading"><div><span class="section-number">YZ İÇERİK İNCELEMESİ</span><h2>Üç yöntem. Açık sonuçlar.</h2></div><button id="run-detectors" class="primary">Motorları karşılaştır ↗</button></div><p class="tool-description">Üslup kuralları, eğitilmiş İngilizce sınıflandırıcı ve yerel dil modeli incelemesini karşılaştır. Ayrı ölçümlerin puanları birbirine eklenmez.</p><div class="detector-grid"><article><span>01 / YEREL KURALLAR</span><h3>Üslup endeksi</h3><strong id="rules-value">—</strong><p id="rules-description">Kalıplar, tekrarlar ve cümle ritmi.</p></article><article><span>02 / EĞİTİLMİŞ MODEL · EN</span><h3>Desklib / DeBERTa</h3><strong id="classifier-value">—</strong><p id="classifier-description">Yalnızca İngilizce, en az 80 kelime. Kalibre edilmemiş model skoru.</p></article><article><span>03 / DİL MODELİ</span><h3>Editoryal inceleme</h3><strong id="review-value">—</strong><p id="review-description">Yüksek sinyalle işaretlenen kelimelerin kapsamı. Yazarlık olasılığı değildir.</p></article></div><p id="detector-status" class="tool-status" role="status">Motorlar çalıştırılmadı. Turnitin ve TextGuard üzerinde kontrol yapılmaz.</p><details id="review-details" hidden><summary>Cümle bazında model gerekçeleri</summary><div id="review-sentences"></div></details><details id="classifier-details" hidden><summary>Eğitilmiş modelin incelediği metin pencereleri</summary><div id="classifier-windows"></div></details></section><section class="rewrite-card"><div class="rewrite-intro"><span class="section-number">02 / YENİDEN YAZ</span><h2>Aynı fikir.<br>Daha iyi bir ifade.</h2><p>Anlamı koru, anlatımı değiştir.</p></div><div class="rewrite-controls"><label for="style">Nasıl bir dil kullanalım?</label><div class="style-options" role="group" aria-label="Yazım üslubu"><button data-style="natural" aria-pressed="true" class="selected">✧ Doğal</button><button data-style="technical" aria-pressed="false">⌘ Teknik</button><button data-style="academic" aria-pressed="false">⌑ Akademik</button><button data-style="aviation" aria-pressed="false">↗ Havacılık</button><button data-style="business" aria-pressed="false">◇ İş dili</button><button data-style="journalistic" aria-pressed="false">▤ Haber</button></div><input type="hidden" id="style" value="natural"><label for="instruction">Kendi talimatın <span>İsteğe bağlı</span></label><textarea id="instruction" maxlength="1000" rows="2" placeholder="Örn. Akademik havacılık dili kullan; cümleleri sadeleştir."></textarea><details><summary>Korunacak terimler</summary><label for="glossary">Virgülle ayırarak yaz</label><input id="glossary" maxlength="1000" placeholder="TCAS, yaklaşma minimumları, stall"></details><div class="rewrite-action"><p>Sayılar ve atıflar otomatik kontrol edilir.</p><button id="rewrite" class="primary">Yeniden yaz <span>↗</span></button></div><p class="subtle" id="provider-notice">Motor bağlantısı bekleniyor.</p></div></section>
-<section id="rewrite-result" class="output-card" hidden><div class="panel-heading"><h2>Yeni anlatım</h2><div><button id="copy" class="text-button">Kopyala</button><button id="download" class="text-button">↓ .txt indir</button></div></div><p id="preservation" class="preservation"></p><div class="comparison"><div><h3>ORİJİNAL</h3><div id="original-copy"></div></div><div><h3>YENİDEN YAZILMIŞ</h3><div id="rewritten"></div></div></div><p id="rewrite-meta" class="subtle"></p><button id="use-result" class="secondary">Yeni metni analiz et ↗</button></section>
-<section id="similarity-tools" class="tool-card"><div class="tool-heading"><div><span class="section-number">İNTİHAL İNCELEMESİ İÇİN</span><h2>Kaynak benzerliği</h2></div><button id="run-similarity" class="primary">Kaynaklarla karşılaştır ↗</button></div><p class="tool-description">İncelediğin metni yukarıdaki kaynak metin alanına yaz. Karşılaştırma için aşağıya belge veya kaynak metni ekle. Bu tarama yalnızca eklediğin kaynakları kapsar; internet ve Turnitin veri tabanı taranmaz.</p><div class="reference-form"><div class="reference-fields"><div><label for="reference-title">Kaynak başlığı</label><input id="reference-title" maxlength="160" placeholder="Örn. İncelenen makale / Ders notu"></div><div><label for="reference-url">Kaynak bağlantısı <small>İsteğe bağlı etiket; bağlantı açılmaz</small></label><input id="reference-url" type="url" maxlength="2000" placeholder="https://..."></div></div><label for="reference-text">Kaynak metin</label><textarea id="reference-text" maxlength="20000" rows="5" placeholder="Karşılaştırılacak kaynak metnini yapıştır veya dosyadan aktar."></textarea><div class="reference-actions"><button id="pick-reference" class="secondary">↑ Kaynak dosyası yükle</button><input id="reference-file" type="file" accept=".pdf,.docx,.txt,.md" hidden><span id="reference-counter">0 / 20.000</span><button id="add-reference" class="primary">Kaynağı ekle +</button></div></div><div id="reference-list" class="reference-list" aria-live="polite"></div><div class="similarity-options"><label><input id="exclude-quotes" type="checkbox" checked> Tırnak içindeki alıntıları hariç tut</label><label><input id="exclude-bibliography" type="checkbox" checked> Kaynakça bölümünü hariç tut</label><label>En kısa eşleşme <select id="match-length"><option value="5">5 kelime</option><option value="8" selected>8 kelime</option><option value="12">12 kelime</option></select></label></div><p id="similarity-status" class="tool-status" role="status">Henüz kaynak eklenmedi.</p><div id="similarity-result" hidden><div class="similarity-summary"><strong id="similarity-score">0%</strong><span id="similarity-summary"></span></div><p class="tool-description">Benzerlik intihal kararı değildir. Atıf ve alıntı bağlamını kontrol et. Eşleşme bulunmaması metnin özgün olduğunu kanıtlamaz.</p><div id="similarity-matches"></div></div></section><section class="tool-card report-bar"><div><span class="section-number">ÇALIŞMA RAPORU</span><h2>Sonuçları yanında götür.</h2><p class="tool-description">Çalıştırılan kontrolleri, kaynak eşleşmelerini ve kelime istatistiklerini indir.</p></div><div><button id="download-report" class="secondary">↓ HTML raporu</button><button id="print-report" class="primary">Yazdır / PDF ↗</button></div></section><section id="method" class="info-section"><span class="section-number">ŞEFFAF TASARIM</span><h2>Bir hüküm değil, bir okuma aracı.</h2><div class="info-grid"><article><span>01</span><h3>Açıklanabilir sinyaller</h3><p>Kalıplaşmış geçişler, tekrarlar ve cümle ritmi değerlendirilir. Kırmızı, yüksek üslup sinyalidir; “kesin yapay zekâ” demek değildir.</p></article><article><span>02</span><h3>Belirsizliği görünür kılar</h3><p>Endeks etiketli bir veri kümesi üzerinde kalibre edilmedi. Kısa, teknik ve akademik metinler yanıltıcı sonuçlar verebilir.</p></article><article><span>03</span><h3>Yazara son söz</h3><p>Yeniden yazım bir editör taslağıdır. Anlam, kaynak ve teknik doğruluk insan incelemesi gerektirir; yazarlık garantisi verilmez.</p></article></div></section>
-<section id="setup" class="setup"><div><span class="section-number">MOTOR KURULUMU</span><h2>Modelini seç, yazmaya devam et.</h2><p>Yerel analiz kullanıma hazır. Yeniden yazmak için proje klasöründeki <code>.env.example</code> dosyasını <code>.env</code> olarak kopyala ve bir sağlayıcı seç.</p></div><div><h3>Ollama · yerel model</h3><code>ollama pull qwen3:8b</code><p><code>AI_PROVIDER=ollama</code> ve <code>OLLAMA_MODEL=qwen3:8b</code> ayarla.</p><h3>OpenAI · bulut modeli</h3><p><code>AI_PROVIDER=openai</code>, <code>OPENAI_API_KEY</code> ve hesabında erişebildiğin <code>OPENAI_MODEL</code> değerini ayarla. Ardından sunucuyu yeniden başlat. Anahtarı tarayıcıya veya GitHub'a ekleme.</p><label for="password">Uygulama parolası <span>(Yapılandırıldıysa)</span></label><input id="password" type="password" autocomplete="off" placeholder="Yalnızca bu oturumun belleğinde tutulur"><button id="connect" class="text-button">Bağlantıyı kontrol et ↗</button></div></section>
-<footer><span>prosebeacon<sup>LAB</sup></span><p>Metne merakla yaklaş.</p><span>TR / EN · 2026</span></footer></main></div><div id="message" role="status" aria-live="polite" hidden></div>
-<dialog id="import-dialog" aria-labelledby="import-title"><div class="panel-heading"><h2 id="import-title">Dosya önizlemesi</h2><button id="import-cancel" class="text-button" aria-label="Dosya önizlemesini kapat">Kapat ×</button></div><div class="import-body"><p id="import-summary"></p><p id="import-warnings" class="import-warnings"></p><div id="import-part-control"><label for="import-part">Aktarılacak bölüm</label><select id="import-part"></select></div><label for="import-preview">Çıkarılan metin <span>Analizden önce düzenleyebilirsin.</span></label><textarea id="import-preview" maxlength="20000" spellcheck="false"></textarea><div class="import-footer"><span id="import-counter"></span><button id="import-apply" class="primary">Metni kullan ↗</button></div><p class="subtle">Dosya bu sunucuda okunur, kalıcı olarak kaydedilmez ve içe aktarırken modele gönderilmez. Görsel veya taranmış sayfalarda OCR metin tanıma gerekli olabilir.</p></div></dialog>
-</body></html>
+<header class="topbar">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b1220"/><path d="M20 46V18h13c6 0 10 4 10 9s-4 9-10 9h-6v10z" fill="#e5484d"/><circle cx="44" cy="42" r="7" fill="none" stroke="#30a46c" stroke-width="4"/></svg>
+    <div>
+      <h1>ProseBeacon</h1>
+      <p class="tagline">Belgenin tamamı · yerel motor · çevrimdışı çalışır</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="engine-pill" id="enginePill" title="Motor durumu">
+      <span class="dot"></span><span id="engineText">motor yükleniyor…</span>
+    </div>
+    <div class="lang-switch" role="group" aria-label="Dil">
+      <button data-locale="tr" class="on">TR</button><button data-locale="en">EN</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ================= INPUT ================= -->
+  <section class="card" id="inputCard">
+    <div class="card-head">
+      <h2>1 · Belge</h2>
+      <span class="hint">Word (.docx), PDF, TXT, Markdown — en fazla 50 MB. Belge <strong>bölünmez</strong>, tamamı işlenir.</span>
+    </div>
+    <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Dosya seç veya sürükle">
+      <input type="file" id="fileInput" accept=".docx,.pdf,.txt,.md" hidden>
+      <div class="dz-inner">
+        <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <p><strong>Dosyayı buraya bırakın</strong> veya seçmek için tıklayın</p>
+        <p class="dz-sub" id="dzSub">Henüz belge yüklenmedi</p>
+      </div>
+    </div>
+    <div class="row spread">
+      <div class="row">
+        <button class="ghost" id="sampleBtn">Örnek metni yükle</button>
+        <button class="ghost" id="pasteBtn">Metin yapıştır</button>
+        <button class="ghost danger" id="clearBtn" disabled>Temizle</button>
+      </div>
+      <div class="doc-meta" id="docMeta"></div>
+    </div>
+  </section>
+
+  <!-- ================= AI GAUGE ================= -->
+  <section class="card" id="gaugeCard">
+    <div class="card-head">
+      <h2>2 · Yapay zekâ benzerliği</h2>
+      <span class="hint">Yerel ensemble motor · metin dışarı gönderilmez</span>
+    </div>
+    <div class="gauge-wrap">
+      <div class="gauge">
+        <svg viewBox="0 0 120 120" class="gauge-svg" aria-hidden="true">
+          <circle cx="60" cy="60" r="52" class="track"/>
+          <circle cx="60" cy="60" r="52" class="bar" id="gaugeBar"/>
+        </svg>
+        <div class="gauge-value">
+          <strong id="gaugePct">—</strong>
+          <span>% yapay zekâ benzerliği</span>
+        </div>
+      </div>
+      <div class="gauge-side">
+        <div class="band" id="gaugeBand">Analiz için belge yükleyin</div>
+        <ul class="kv">
+          <li><span>Güven aralığı</span><b id="gaugeInterval">—</b></li>
+          <li><span>Güven</span><b id="gaugeConfidence">—</b></li>
+          <li><span>Okunabilirlik</span><b id="gaugeReadability">—</b></li>
+          <li><span>Kelime / cümle</span><b id="gaugeWords">—</b></li>
+        </ul>
+        <div class="factors" id="gaugeFactors"></div>
+        <p class="limitation" id="gaugeLimitation"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STYLE + ACTIONS ================= -->
+  <section class="card" id="styleCard">
+    <div class="card-head">
+      <h2>3 · Üslup ve işlem</h2>
+      <span class="hint">Seçili üslup, belgenin tamamına veya seçtiğiniz bölüme uygulanır</span>
+    </div>
+    <div class="styles" id="styleButtons" role="group" aria-label="Üslup"></div>
+    <div class="row wrap">
+      <label class="field grow">
+        <span>Ek talimat (isteğe bağlı)</span>
+        <input type="text" id="instruction" maxlength="1000" placeholder="örn. edilgen çatıyı azalt, cümleleri kısalt">
+      </label>
+      <label class="field">
+        <span>Korunacak terimler</span>
+        <input type="text" id="glossary" maxlength="1000" placeholder="InVEST, NDVI, Van Bemmelen">
+      </label>
+      <label class="check">
+        <input type="checkbox" id="humanise" checked><span>İnsanî ritim</span>
+      </label>
+    </div>
+    <div class="row wrap actions">
+      <button class="primary" id="rewriteBtn" disabled>Düzelt ve yeniden yaz</button>
+      <button class="ghost" id="proofreadBtn" disabled>Yalnızca yazım denetimi</button>
+      <button class="ghost" id="analyzeBtn" disabled>Analizi yenile</button>
+      <button class="ghost" id="scanBtn" disabled>Kaynakları doğrula</button>
+      <span class="selection-hint" id="selectionHint"></span>
+    </div>
+    <div class="progress" id="progress" hidden>
+      <div class="bar-track"><div class="bar-fill" id="progressFill"></div></div>
+      <span id="progressText">hazırlanıyor…</span>
+    </div>
+  </section>
+
+  <!-- ================= DIFF ================= -->
+  <section class="card" id="diffCard" hidden>
+    <div class="card-head">
+      <h2>4 · Karşılaştırma</h2>
+      <div class="row">
+        <div class="view-switch" role="group" aria-label="Görünüm">
+          <button data-view="side" class="on">Yan yana</button>
+          <button data-view="inline">Kırmızı üstte · yeşil altta</button>
+        </div>
+        <label class="check"><input type="checkbox" id="onlyChanges"><span>Yalnızca değişiklikler</span></label>
+      </div>
+    </div>
+    <div class="diff-stats" id="diffStats"></div>
+    <div class="panes" id="panes">
+      <div class="pane">
+        <div class="pane-head"><h3>Orijinal</h3><span class="legend"><i class="swatch del"></i>silinen / hatalı</span></div>
+        <div class="pane-body" id="leftPane"></div>
+      </div>
+      <div class="pane">
+        <div class="pane-head"><h3>Düzeltilmiş</h3><span class="legend"><i class="swatch ins"></i>yeni / düzeltilmiş</span></div>
+        <div class="pane-body" id="rightPane"></div>
+      </div>
+    </div>
+    <div class="inline-view" id="inlineView" hidden></div>
+    <div class="row spread export-row">
+      <div class="row">
+        <button class="ghost" id="copyBtn" disabled>Düzeltilmiş metni kopyala</button>
+        <button class="ghost" id="exportDocx" disabled>Word indir</button>
+        <button class="ghost" id="exportMd" disabled>Markdown indir</button>
+        <button class="ghost" id="exportTxt" disabled>Metin indir</button>
+      </div>
+      <span class="hint" id="diffNotice"></span>
+    </div>
+  </section>
+
+  <!-- ================= TABS ================= -->
+  <section class="card" id="tabsCard" hidden>
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="issues" class="on">Sorunlar <b id="tabIssues">0</b></button>
+      <button role="tab" data-tab="citations">Kaynakça <b id="tabCitations">0</b></button>
+      <button role="tab" data-tab="sources">Kaynak doğrulama <b id="tabSources">0</b></button>
+      <button role="tab" data-tab="changes">Değişiklikler <b id="tabChanges">0</b></button>
+    </div>
+    <div class="tab-body" id="tab-issues"></div>
+    <div class="tab-body" id="tab-citations" hidden></div>
+    <div class="tab-body" id="tab-sources" hidden></div>
+    <div class="tab-body" id="tab-changes" hidden></div>
+  </section>
+
+  <footer class="footer">
+    <p id="authorities"></p>
+    <p class="fine">ProseBeacon v0.3 · Tüm işlemler bilgisayarınızda yapılır. Yapay zekâ oranı bir olasılık tahminidir; kesin yargı değildir.</p>
+  </footer>
+</main>
+
+<div class="toast-stack" id="toasts" aria-live="polite"></div>
+<div class="selection-pop" id="selectionPop" hidden>
+  <button id="popRewrite">Seçimi bu üslupla yeniden yaz</button>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>
